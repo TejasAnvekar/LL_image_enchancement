@@ -88,7 +88,7 @@ def config():
     parser.add_argument(
         "--Bdatapath",
         type=str,
-        default="/media/tejas/TAS/arch_data/images/",
+        default="/home/tejas/Desktop/arch_data/images/",
         help="path for image dataset with flash and ambient images (default not set)",
     )
 
@@ -102,7 +102,7 @@ def config():
     parser.add_argument(
         "--Bdatapathts",
         type=str,
-        default="/media/tejas/TAS/arch_data/validation/",
+        default="/home/tejas/Desktop/arch_data/validation/",
         help="path for image dataset for testing with flash and ambient images (default not set)",
     )
 

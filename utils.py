@@ -5,6 +5,7 @@ from torchvision.utils import save_image
 import os
 from skimage.metrics import structural_similarity as ssim
 import pandas as pd
+import numpy as np
 import matplotlib.pylab as plt
 
 
@@ -70,10 +71,12 @@ def plot_disc(D_real,D_fake,epochs,idx,args):
 
     path=args.dresultspath+f"/{args.m}/{epochs}/{idx}"
 
-    fig=plt.imshow(D_real,cmap='Blues')
+
+
+    fig=plt.imshow(D_real[:,:,0],cmap='Blues')
     plt.axis("off")
     plt.savefig(path+"_real.png",bbox_inches='tight',pad_inches=0)
-    fig=plt.imshow(D_fake,cmap='Reds')
+    fig=plt.imshow(D_fake[:,:,0],cmap='Reds')
     plt.axis("off")
     plt.savefig(path+"_fake.png",bbox_inches='tight',pad_inches=0)
 
@@ -120,7 +123,7 @@ def train(train_loader,disc,gen,opt_disc,opt_gen,criterion_disc,criterion_gen,d_
                 D_fake_loss = criterion_disc(D_fake,torch.zeros_like(D_fake))
                 D_loss += (D_real_loss + D_fake_loss)
         
-        D+=(D_loss/len(train_loader))
+                D+=(D_loss.item())
 
         disc.zero_grad()
         d_scaler.scale(D_loss).backward()
@@ -140,7 +143,7 @@ def train(train_loader,disc,gen,opt_disc,opt_gen,criterion_disc,criterion_gen,d_
                 me = criterion_gen["mse"](y_fake,y)*args.lda
 
             G_loss = G_fake_loss + me
-        G+= (G_loss/len(train_loader))
+            G+= (G_loss.item())
 
 
         opt_gen.zero_grad()
@@ -148,16 +151,20 @@ def train(train_loader,disc,gen,opt_disc,opt_gen,criterion_disc,criterion_gen,d_
         g_scaler.step(opt_gen)
         g_scaler.update()
 
-        writer.add_scalar("Training loss Gen", G.item(), epochs * len(train_loader) +idx)
-        writer.add_scalar("Training loss Disc", D.item(),epochs * len(train_loader) +idx)
+
+        D=D/len(train_loader)
+        G=G/len(train_loader)
+
+        writer.add_scalar("Training loss Gen", G, epochs * len(train_loader) +idx)
+        writer.add_scalar("Training loss Disc", D,epochs * len(train_loader) +idx)
 
 
         if idx % args.logs ==0:
             loop.set_description(f"[{epochs}/{args.epochs}]")
             loop.set_postfix(D_real = torch.sigmoid(D_real).mean().item(),
                              D_fake = torch.sigmoid(D_fake).mean().item(),
-                             Disc_Loss = D.item(),
-                             Gen_Loss = G.item())
+                             Disc_Loss = D,
+                             Gen_Loss = G)
 
 
 
